@@ -1,0 +1,53 @@
+- 데이터의 사용 용도에 맞게 적절한 데이터 모델을 선택할 수 있어야 한다.
+- 데이터 모델
+	- Network
+		- 고대 시절 사용되던 방식. CODASYL 등
+		- 데이터를 OrderedSet에 저장한다.
+			- 데이터를 구하기 위해서는 Set을 Traversal하는 등의 과정을 필요로 한다.
+		- 모든 쿼리문이 Imperative하다.
+		- Many-to-Many 구조에 적절하지 않아 Relational이 등장하게 된다.
+	- Relational
+		- 테이블을 Row/Column들의 집합으로 분리하여 저장한다.
+		- 여러 개의 데이터간의 Join이 용이하다.
+		- 많은 데이터가 존재할 때 Join이 많아져 연산량이 오히려 많아질 수 있다.
+	- Document
+		- 몇몇 어플리케이션은 Relational이 적절하지 않아 도입하게 된다.
+			- NoSQL은 Graph / Document 2가지로 발전하게 된다.
+		- 데이터를 JSON / XML등의 도큐먼트 형태로 저장한다.
+		- Join이 어렵고, DocumentDB에서 조인이 잘 구현되어 있지 않다.
+		- 스키마에서 자유롭다. -> 동적으로 스키마를 판단할 수 있다.
+		- 데이터가 자기 자신에 대한 모든걸 담고 있는 도큐멘테이션이고, 도큐멘트간의 연관성이 있을 때 사용한다.
+	- Graph
+		- 도큐먼트와 반대로 데이터 간의 연관이 거의 모든 데이터간에서 이루어질 때 사용한다.
+		- Graph 자료구조와 동일한 구조로 구성된다
+			- Vertex를 Object로 정의한다.
+			- Edge를 데이터와 데이터의 관계로 정의한다.
+		- DB를 바탕으로 구현할 수 있다.
+			- Vertex와 Edge 두개의 테이블로 구현할 수 있다.
+		- 네트워크 자료구조랑은 다르다.
+			- 네트워크처럼 OrderedSet에서 오는 Restriction이 없다.
+			- 네트워크는 Nested되어야 연결될 수 있지만, 그래프는 어떤 Vertex끼리도 Edge로 연결할 수 있다.
+		- Graph를 위한 쿼리문들이 존재한다.
+			- Cypher
+			- SPARQL
+				- Triple-Store: (Subject, Predicate, Object) 형태로 관계를 표현
+			- Datalog
+				- Triple-Store와 유사하게 Predicate(Subject, Object) 형태로 관계를 표현한다.
+				- Rule을 정의하여 데이터를 생성한다.
+				- Cypher랑 SPARQL은 바로 SELECT부터 치는데, 얘는 Predicate부터 정의한다.
+				- Cypher와 SPARQL과 달리 서로 다른 쿼리에서 중복되는 Rule을 재사용할 수 있다.
+		- Graph와 Document 모두 Schema에 대한 Restriction이 없다.
+	- 쿼리
+		- 선언형과 명령형
+			- Declarative
+				- 동작으로 받아야 할 데이터를 정의한다.
+				- 내부 구현 과정이 정의되어 있지 않아 분산 처리에 용이하다.
+			- Imperative
+				- 어떻게 동작하여 결과를 얻을지 정의한다.
+				- 동작 방식이 정의되어 있어 분산 처리를 직접 구현해야 한다.
+		- MapReduce
+			- Map: 주어진 데이터에 특정한 연산을 수행한다.
+				- 이때 Map에 들어가는 함수는 Pure Function
+			- Reduce: 제작된 데이터에서 특정한 값만 추출한다.
+			- Filter : 입력으로 들어갈 데이터를 거른다.
+	- 데이터 모델에 따라 사용이 달라진다. One-fits-all은 존재하지 않는다.

@@ -1,0 +1,12 @@
+- 어플리케이션의 여러가지 aspect에 관한 내용을 정의한다.
+- Reliability / Scalability /Maintenability
+	- Realiability : 기능이 정상적으로 작동하는지 여부
+	- Scaleability : 규모가 커져도 동일한 퍼포먼스를 낼 수 있는가의 여부
+		- 이 과정에서 "퍼포먼스"라는 지표의 선택 기준을 정의한다.
+		- 웹 어플리케이션에서는 주로 latency를 percentile로 정의한다.
+			- 사용자의 경험과 연결되는 더 직관적인 밸류이기때문에 average가 아닌 mean(p50) 등의 percentile을 사용한다.
+	- Maintenability : 어플리케이션의 maintenance에 필요한 비용
+		- 여기서 추가로 3개를 정의한다.
+			- operability : 운영팀이 운영하는데 필요한 비용
+			- simplicity : 어플리케이션의 전반적인 단순성
+			- evolvability : 어플리케이션의 변경 용이성

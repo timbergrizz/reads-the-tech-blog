@@ -1,0 +1,109 @@
+- Memory Management
+	- 소프트웨어가 컴퓨터 메모리를 제어하고 조정하는 방법
+	- 소프트웨어는 OS에서 동작할때 RAM에 다음과 같이 접근
+		- 실행되는 바이너리 코드를 LOAD
+		- 실행될 프로그램이 사용하는 자료구조, 데이터를 STORE
+	- Stack
+		- 정적 메모리 할당을 위해 사용, LIFO
+		- 스택의 가장 위에 데이터를 읽고 쓰고, 지역변수, 반환 주소값, 매개변수가 저장됨.
+		- 유한하고 정적인 크기만 지정되어, 컴파일 타임에 사이즈가 결정됨
+		- 함수에 실행될 데이터는 여러 스택프레임들로 저장됨.
+	- Heap
+		- 동적 메모리 할당에 사용, 프로그램은 포인터를 사용해 들여다 볼 수 있음.
+		- 데이터를 더 많이 저장할 수 있으나, 찾아야 해서 스택보다 느림.
+		- 프로세스의 스레드들이 공유해서 사용.
+		- 함수가 종료되면 사라지는 스택과 달리 따로 관리가 이루어지게 됨.
+	- 램은 사용제한이 없어 힙이 과도하게 사용되면 문제가 발생
+		- Dagling Pointer : 할당 해제된 객체를 포인터가 가리킴
+		- Memory Leak : 해제되지 않는 메모리가 발생하여 더 많은 메모리를 차지
+- Garbage Collection
+	- 현대 프로그래밍 언어는 자동으로 메모리를 관리하는 방법을 제공
+		- 대표적인 방법이 GC
+	- 보안성 증가, OS 이식성 향상, 코드 단순화의 장점이 있음.
+		- Overhead가 존재함.
+	- Heap서 더 이상 사용하지 않는 메모리를 수집하여 정리함
+	- 일반적으로 다음과 같은 과정으로 진행됨
+		- GC가 수행되는 동안 GC 쓰레드를 제외한 모든 쓰레드를 일시 정지 (Stop The World)
+		- 참조하고 있지 않는 메모리 할당 해제
+		- 끝난 후 일시정지된 쓰레드 작업 재개
+	- Mark & Sweep GC : 스택에서 존재하는 객체, 변수에서 힙의 참조를 확인. 지울 메모리 표시후 해제
+	- Reference Counting GC : 모든 객체의 참조되는 횟수에 count를 설정하여, 0이되면 GC가 수행
+		- 순환 참조를 다룰 수 없어 다른 솔루션과 같이 사용
+- Memory Management on Go
+	- 고는 정적타입 컴파일 언어이며 VM을 사용하지 않아 바이너리 안에 런타임이 내장됨.
+		- GC와 스케줄링, 동시성을 수행하는 런타임이 내장됨
+	- 메모리는 Standard Library를 통해 수행됨.
+		- 메모리가 필요할 때 자동 할당, 더 이상 필요하지 않을 때 GC
+	- 고루틴은 OS 스레드의 컨텍스트 스위칭으로 동작함.
+	- 일반적인 GC는 수행되면 메모리 단편화가 발생하여 새로운 메모리 할당이 어려워짐.
+		- 다른 언어는 세대별 메모리 구로 단편화를 줄이고 compaction을 수행한다.
+		- Go는 세대별 GC와 compaction을 수행하지 않는다.
+			- TCMalloc과 유사한 구조를 사용해 단편화를 최소화하고 lock을 줄인다.
+- TCMalloc
+	- 메모리 풀 : 메모리를 미리 할당해두고 필요한만큼 잘라서 사용.
+	- 스레드별로 메모리풀을 따로 두고 (Thread Local Cache), 다른 쓰레드에서 접근해야 하는 메모리는 전역 메모리풀(Central Heap)을 두어 관리
+		- 32kb 이하의 작은 객체를 TLC로, 메모리 부족하면 CH에서 할당.
+		- CH는 큰 객체를 4kb단위로 나누어 저장. 일반적인 메모리풀과 거의 동일.
+	- Thread Memory Cache의 존재로 Lock을 회피하여 지연이 감소한다.
+		- 병렬 프로그램상에서 작은 객체를 할당하기 효과적인 구조이다.
+	- 단편화를 방지하여 compaction을 불필요하게 한다.
+- Virtual Memory on Go
+	- Virtual Memory에 사용되는 실제 메모리 구조는 Resident Set이라 불림
+	- Resident Set : 8B 크기의 mspan으로 나뉘어 하나의 mheap object로 관리됨.
+	- Page Heap (mheap) : Heap. Go의 동적 할당 데이터 저장.
+		- 컴파일 영역에서 계산되지 못하는 크기, 메모리의 가장 큰 블럭 차지, GC 수행됨
+	- mspan: mheap에서 페이지들을 관리하는 가장 기본 구조. 같은 크기의 페이지들의 묶음
+		- Doubly-linked List이며, start page의 주소, 스팬 사이즈 클래스, 스팬의 페이지 개수를 가짐.
+		- Go는 Page들을 8B 이상 32KB이하 사이즈별로 67개의 클래스 블럭으로 나눔
+	- mcentral: 같은 크기의 span 클래스별로 span들이 그룹화된 구조
+		- empty mspanList : free page가 없어 할당에 사용할 수 없는 span list
+			- allocatable object나 mcache에 캐시된 span들의 리스트
+			- span이 free가 되면 free page가 생겨 non-empty list로 이동
+		- non-empty mspanList : free page가 있어 할당에 사용할 수 있는 span list
+			- free object들의 span들의 리스트
+			- mcentral로부터 새로운 span이 요청되면 empty list로 이동
+		- mcentral의 non-empty list에 더이상 mcache를 할당할 수 있는 span 없는 경우 mheap으로부터 새로운 span들을 요청하여 mcache에 전달.
+	- arena: Virtual Memory에 할당하는 64MB 덩어리. page는 이 영역에서 span들에 묶임
+	- mcache : Logical Processor가 작은 객체들을 저장하기 위한 Cache Memory
+- Go Escape Analysis
+	- Go는 가능하다면 모두 Stack에 직접 할당하고자 한다.
+		- escape analysis에서 어떤 데이터가 스택 / 힙으로 갈지 결정한다.
+			- 컴파일 타임에 수명을 알 수 있는지 여부를 확인한다.
+- Go Memory Allocation
+	- 객체의 크기에 따라 세 가지 방식으로 할당을 결정한다.
+		- Tiny (~ 16B) : mcache의 tiny allocater를 사용해 할당. 블럭당 16B로 구성
+		- Small (16B ~ 32KB) : 고루틴이 동작하는 프로세서의 mcache의 mspan들이 할당
+		- Large (32KB ~) : mcache를 사용하지 않고 mheap에 해당 사이즈의 span으로 직접 할당
+			- mheap 비어있거나 요청만큼 큰 페이지가 없으면 OS로부터 새로운 페이지 할당
+	- mspan과 mcache를 이용해 단편화와 Lock 비용을 감소시킴.
+- Go Garbage Collection
+	- Stack에서 참조되지 않거나 다른 객체에서 참조되지 않는 객체의 메모리를 해제
+	- Go는 non-generational concurrent tri-color mark and sweep 방식을 사용
+		- 컴파일러단에서 객체 수명이 파악되는 경우 스택에 할당되어 세대별 GC가 필요하지 않음
+		- 프로세서 / 고루틴마다 할당을 수행하기때문에 lock을 최소화하고, mutator thread에 의해 concurrent하게 GC가 수행될 수 있음
+		- 할당이 정해진 size class별로 진행되어 단편화를 최소화하여 세대별 GC와 컴팩션이 필요 없음
+		- mark and sweep 방식을 사용하며, 이를 구현하기 위한 알고리즘이 tri-color를 사용함
+	- 다음과 같은 과정으로 진행된다.
+		- Heap의 할당이 GC Percentage에 도달했을 때 동작 수행
+		- Mark Setup (STW)
+			- GC가 시작되면 STW로 모든 고루틴의 동작을 중지. 모든 고루틴을 GC safe point로 도달시킴
+		- Marking (Concurrent)
+			- 모든 고루틴이 설정된 Write Barrier를 가지면 정지된 고루틴을 다시 동작 시작, 워커는 마킹을 수행
+			- 마킹이 시작되면 모든 객체를 하얀색, Stack의 GC root object는 회색으로 표시
+				- Stack의 GC Root부터 traverse되는 객체를 회색으로 표시.
+				- 마킹이 수행되는 P와 고루틴은 블락되고, 완료되면 해당 P와 고루틴 다시 시작
+			- 이 과정중 새롭게 할당되는 객체는 검은색으로 표시
+		- Mark Termination (STW)
+			- 모든 고루틴의 마킹이 완료되면, 고루틴이 잠시 중지되고 write barrier를 끔
+			- 고루틴은 다시 활성화되고, 회색 객체를 검은색으로 마킹해 사용중임을 표기
+			- GC는 다음 GC 일정 계산
+		- Sweeping (Concurrent)
+			- collection이 끝나고 할당이 시도되면, sweep 작업이 수행되어 하얀색 object 정리
+			- 백그라운드에서 실행됨.
+			- Go는 Lazy Sweeping과 Concurrent Sweeping을 사용, 앱 동작과 할당하는 동안 Sweeping 발생
+- Go GC Pacing
+	- 다음 GC를 언제 트리거할지 결정하기 위해 Pacer 알고리즘 사용
+	  id:: 67c0a5be-2f3b-4449-91c9-20d7bb1c30f5
+	- Pacing 알고리즘은 목표 힙 크기에 도달하도록 적절한 GC 주기를 찾으려 한다.
+		- Default는 메모리를 마크한 후 현재 Alive인 힙 크기가 2배가 될때마다 트리거하려 시도한다.
+	-

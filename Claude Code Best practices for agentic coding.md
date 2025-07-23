@@ -1,10 +1,7 @@
 ---
-type: Study
-title: 'Claude Code: Best practices for agentic coding'
-tags: []
 출처: '[Claude Code: Best Practices for agentic codingbest-practices](https://www.anthropic.com/engineering/claude-code-best-practices)'
 ---
-
+# Claude Code: Best practices for agentic coding
 - Cloude Code는 기본적으로 로우레벨과 의견 없이 개발되어, 특정 워크플로우를 강제하지 않고 모델 그 자체에 접근하도록 디자인되었다.
 
     - 이러한 디자인 철학은 유연하고 커스터마이징 가능하며, 스크립트를 쓸 수 있고, 안전하고 강력한 툴을 만들었다.
@@ -32,6 +29,8 @@ tags: []
     - 프로젝트에 있어 예측 불가능할 수 있는 행동과 경고
 
     - 클로드가 기억하길 원하는 정보들
+
+- /init 커맨드를 실행하면 클로드가 자동으로 CLAUDE.md 파일을 생성해준다
 
 - 정해진 포맷은 없고, 사람이 읽을 수 있는 형태로 정밀하게 구성하는 것이 좋다.
 
@@ -69,7 +68,7 @@ tags: []
 
 - 수동으로 CLAUDE.md에 추가하거나, #키를 눌러 모델에 지시사항을 전달할 수 있다.
 
-- Anthropic에선, CLAUDE.md를 [prompt improver](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/prompt-improver) 에 넣거나, 연관성을 높이도록 지시를 튜닝한다.
+- Anthropic에선 CLAUDE.md를 [prompt improver](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/prompt-improver) 에 넣거나, "IMPORTANT나" "YOU MUST"등의 단어로 강조하여 지시의 연관성을 높이도록 튜닝한다.
 
 ## Curate Claude's list of allowed tools
 
@@ -81,7 +80,7 @@ tags: []
 
     - 세션동안 프롬프트에 Always Allow를 쓴다.
 
-    - `/allowed-tools` 커맨드를 사용해 툴을 추가하거나 삭제할 수 있다.
+    - `/permissions` 커맨드를 사용해 툴을 추가하거나 삭제할 수 있다.
 
     - `.claude/settings.json`이나 `~/claude.json`에 적힌 데이터를 수정한다.
 
@@ -167,7 +166,7 @@ tags: []
 
         - think같은 단어를 써서 extended thinking mode로 작업하도록 하면 좋다.
 
-            - `think < think hard < think harder < ultrathink` 같은 명령어로 thinking에 사용할 버짓을 결정할 수 있다.
+            - `think < think hard < think harder < ultrathink` 순서로 더 많은 연산 버짓을 할당하여 깊이 생각하도록 할 수 있다
 
         - 이 결과가 마음에 들면, 문서를 만들거나 깃허브 이슈를 작성하도록 한다.
 
@@ -237,7 +236,7 @@ tags: []
 
 - 린트 에러 수정이나 보일러플레이트 코드 생성에 적절하다.
 
-- 리스크가 있고, 데이터 소실이나 시스템 오염, 데이터 유출등의 위험이 있을 수 있으니 [컨테이너 안에서](https://github.com/anthropics/claude-code/tree/main/.devcontainer) 돌려라.
+- 리스크가 있고, 데이터 소실이나 시스템 오염, 데이터 유출등의 위험이 있을 수 있으니 인터넷 접근이 없는 [컨테이너 환경](https://github.com/anthropics/claude-code/tree/main/.devcontainer) 에서 동작을 권장한다..
 
 ## Codebase Q&A
 
@@ -262,7 +261,7 @@ What’s the equivalent of line 334 of baz.py in Java?
 
 - 모델은 깃을 효과적으로 잘 다룬다. 앤트로픽 엔지니어들은 90% 이상의 깃 사용을 클로드로 한다.
 
-    - 질문에 답하기 위한 깃 히스토리 조회
+    - 소유권이나 디자인 결정에 대한 질문에 답하기 위한 깃 히스토리 조회
 
     - 커밋 메시지 작성.
 
@@ -307,6 +306,8 @@ What’s the equivalent of line 334 of baz.py in Java?
 - UI 개발에서 디자인 mock으로 작업할 때 도움이 되며, 분석과 디버깅 과정에 비주얼 차트로 도움이 된다.
 
 - 컨택스트에 비주얼을 추가하지 않아도 결과가 어떻게 보여야 하는지 알려주는 것이 도움이 된다.
+
+- 맥에선 cmd+ctrl+shift+4로 클립보드에 스크린샷을 저장하고 ctrl+v로 붙여넣을 수 있다.
 
 ## Mention files you want Claude to look at or work on
 
@@ -438,15 +439,15 @@ What’s the equivalent of line 334 of baz.py in Java?
 
     - 작업에 필요한만큼 반복
 
-- 다음을 따르면 좋다.
+- 워크트리 사용시 다음을 따르면 좋다.
 
-    - 일관된 네이밍 컨벤션을 사용한다.
+    - 일관된 네이밍 컨벤션을 사용한
 
-    - 워크트리 하나당 하나의 터미널을 유지한다.
+    - 워크트리 하나당 하나의 터미널을 유지
 
-    - 맥으로 iTerm2 사용하면, 알림 설정해서 attention 필요할 떄 알림 오도록 할 수 있다.
+    - 맥에서 iTerm2 사용하면, 알림 설정해서 attention 필요할 떄 알림 오도록 설정
 
-    - 다른 워크트리에 대해 분리된 IDE 윈도우 사용한다.
+    - 다른 워크트리에 대해 분리된 IDE 윈도우 사용
 
     - 완료 후엔 워크트리 정리해라 `git worktree remove ../project-feature-a`
 

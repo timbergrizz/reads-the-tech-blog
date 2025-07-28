@@ -1,7 +1,4 @@
 ---
-type: Study
-title: 'element : Walmart''s Machine Learning Platform'
-tags: []
 출처: '[element: Walmart’s Machine Learning Platform](https://medium.com/@bagavath/element-walmarts-machine-learning-platform-b8a1f7870784)'
 ---
 

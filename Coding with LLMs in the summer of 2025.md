@@ -30,7 +30,7 @@
 
 - LLM의 능력을 강화하기 위해 인간은 특정한 퀄리티 이상의 원칙을 따르는 상호작용을 해야한다.
 
-    - Refuse vive codeing most of the times
+    - Refuse vibe coding most of the times
 
         - LLM은 좋은 증폭기지만 혼자서 일하게 두기엔 아직 충분히 좋지 않다.
 
